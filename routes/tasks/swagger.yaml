@@ -1,0 +1,196 @@
+# Swagger API Documentation for Node.js Task Management API
+
+openapi: 3.0.0
+info:
+ title: Task Management API
+ version: 1.0.0
+ description: API for managing tasks and task progressing
+
+servers:
+ - url: http://localhost:3000/tasks
+
+paths:
+ /tasks:
+   get:
+     summary: Get all tasks
+     parameters:
+       - name: unassigned
+         in: query
+         description: Filter tasks that are not assigned
+         schema:
+           type: boolean
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:    
+             schema:
+               $ref: '#/components/schemas/TaskList'
+   post:
+     summary: Create a new task
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             $ref: '#/components/schemas/TaskInput'
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Task'
+       
+ /tasks/{id}:
+   get:
+     summary: Get a task by ID
+     parameters:
+       - name: id
+         in: path
+         required: true
+         schema:
+           type: integer
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Task'
+       '404':
+         description: Task not found
+   put:
+     summary: Self-assign a task
+     parameters:
+       - name: id
+         in: path
+         required: true
+         schema:
+           type: integer
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             $ref: '#/components/schemas/SelfAssignInput'
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/TaskStatus'
+       '404':
+         description: Task not found
+       '422':
+         description: Task already assigned
+         
+ /tasks/{id}/progress:
+   put:
+     summary: Update task progress
+     parameters:
+       - name: id
+         in: path
+         required: true
+         schema:
+           type: integer
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             $ref: '#/components/schemas/ProgressUpdate'
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/TaskLog'
+       '400':
+         description: Error during task progress update
+       '422':
+         description: Task not found or not assigned to user
+       
+components:
+ schemas:
+   
+   TaskList:
+     type: array
+     items:
+       $ref: '#/components/schemas/Task'
+       
+   Task:
+     type: object
+     properties:
+       id:
+         type: integer
+       title:
+         type: string
+       instruction:
+         type: string
+       due_date:
+         type: string
+         format: date
+       status:
+         type: string
+       cur_assignee_id:
+         type: integer
+         nullable: true
+         
+   TaskInput:
+     type: object
+     required:
+       - title
+       - instruction
+       - due_date
+       - status
+     properties:
+       title:
+         type: string
+       instruction:
+         type: string
+       due_date:
+         type: string
+         format: date
+       status:
+         type: string
+         
+   SelfAssignInput:
+     type: object
+     required:
+       - userId
+     properties:
+       userId:
+         type: integer
+         
+   TaskStatus:
+     type: object
+     properties:
+       id:
+         type: integer
+       status:
+         type: string
+         
+   ProgressUpdate:
+     type: object
+     required:
+       - userId
+       - status
+       - note
+     properties:
+       userId:
+         type: integer
+       status:
+         type: string
+       note:
+         type: string
+         
+   TaskLog:
+     type: object
+     properties:
+       task_id:
+         type: integer
+       status:
+         type: string

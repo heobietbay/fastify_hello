@@ -1,0 +1,101 @@
+openapi: 3.0.0
+info:
+ title: User and Task Management API
+ version: 1.0.0
+ description: API for managing users and their assigned tasks
+
+servers:
+ - url: http://localhost:3000/users
+
+paths:
+ /users:
+   get:
+     summary: Get all users
+     parameters:
+       - name: firebase_id
+         in: query
+         description: Filter user that has firebase_id match query
+         schema:
+           type: string
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:    
+             schema:
+               $ref: '#/components/schemas/UserList'
+               
+ /users/{id}:
+   get:
+     summary: Get a user by ID
+     parameters:
+       - name: id
+         in: path
+         required: true
+         schema:
+           type: integer
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/User'
+       '404':
+         description: User not found
+         
+ /users/{id}/tasks:
+   get:
+     summary: Get tasks assigned to a user
+     parameters:
+       - name: id
+         in: path
+         required: true
+         schema:
+           type: integer
+     responses:
+       '200':
+         description: Successful response
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/TaskList'
+       '400':
+         description: Error during retrieving tasks
+         
+components:
+ schemas:
+   
+   UserList:
+     type: array
+     items:
+       $ref: '#/components/schemas/User'
+       
+   User:
+     type: object
+     properties:
+       id:
+         type: integer
+       # Add other user properties here
+       
+   TaskList:
+     type: array
+     items:
+       $ref: '#/components/schemas/Task'
+       
+   Task:
+     type: object
+     properties:
+       id:
+         type: integer
+       title:
+         type: string
+       instruction:
+         type: string
+       due_date:
+         type: string
+         format: date
+       status:
+         type: string
+       cur_assignee_id:
+         type: integer
